@@ -21,8 +21,7 @@ const userSchema = new mongoose.Schema({
         required: [true, 'A user must have password']
     },
     alamat: {
-        type: String,
-        unique: true
+        type: String
     },
     gender: {
         type: Number,
