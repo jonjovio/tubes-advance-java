@@ -1,22 +1,55 @@
 const User = require('./../models/userModels');
+const Wallet = require('./../models/walletModels');
 const bcrypt = require('bcrypt');
 
 exports.registerUser = async (req, res) => {
-    try{
+    try {
         const newUser = await User.create(req.body);
 
-        res.status(201).json({
-            status: 'Success',
-            data: {
-                user: newUser
-            }
-        });
-    }catch (err) {
-        res.status(400).json({
-            status: 'Fail',
-            message: 'Invalid data sent!',
-            error: err.message
-        });
+        // Check if the new user is a regular user and not an admin
+        if (newUser.type === "user") {
+            // Create a wallet for the new regular user
+            const newWallet = await Wallet.create({
+                user_id: newUser._id,
+                balance: 0  // Initial balance set to 0
+            });
+
+            res.status(201).json({
+                status: 'Success',
+                data: {
+                    user: newUser,
+                    wallet: newWallet
+                }
+            });
+        } else if (newUser.type === "admin") {
+            // If the user is an admin, return success without creating a wallet
+            res.status(201).json({
+                status: 'Success',
+                message: 'User registered successfully',
+                data: {
+                    user: newUser
+                }
+            });
+        } else {
+            // If userType is neither "user" nor "admin", handle the unexpected type
+            res.status(400).json({
+                status: 'Fail',
+                message: 'Invalid user type specified!'
+            });
+        }
+    } catch (err) {
+        if (err.code === 11000) {
+            res.status(400).json({
+                status: 'Fail',
+                message: 'Duplicate entry, the user already exists!'
+            });
+        } else {
+            res.status(400).json({
+                status: 'Fail',
+                message: 'Invalid data sent!',
+                error: err.message
+            });
+        }
     }
 };
 
@@ -97,6 +130,7 @@ exports.updateUserProfile = async (req, res) => {
 
         res.status(200).json({
             status: 'Success',
+            message: 'User Updated successfully',
             data: {
                 user
             }

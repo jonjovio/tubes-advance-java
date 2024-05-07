@@ -17,6 +17,10 @@ router
 .patch(carController.updateCar);
 
 router
+.route('/updateCarCategory/:model')
+.patch(carController.updateCarCategory);
+
+router
 .route('/deleteCar/:model')
 .delete(carController.deleteCar);
 
